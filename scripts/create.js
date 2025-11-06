@@ -301,6 +301,44 @@ else if (tipe === "bersilangan") {
   });
 }
 
+  // ====== TIPE SOAL URUTKAN KATA ======
+else if (tipe === "urutkanKata") {
+  const wadah = document.getElementById("formWadah");
+  wadah.innerHTML = `
+    <label>Pertanyaan:</label>
+    <input type="text" id="pertanyaan" placeholder="Misal: Susunlah kata berikut menjadi kalimat yang benar" />
+
+    <label>Kalimat benar:</label>
+    <input type="text" id="kalimatBenar" placeholder="Misal: Saya suka makan nasi goreng" />
+
+    <button id="saveQuestion">Simpan Soal</button>
+  `;
+
+  document.getElementById("saveQuestion").addEventListener("click", () => {
+    const pertanyaan = document.getElementById("pertanyaan").value.trim();
+    const kalimatBenar = document.getElementById("kalimatBenar").value.trim();
+
+    if (!kalimatBenar.includes(" ")) {
+      alert("Kalimat harus terdiri dari beberapa kata agar bisa diacak!");
+      return;
+    }
+
+    // Pisah kata menjadi array
+    const kataArray = kalimatBenar.split(" ");
+    // Acak susunannya
+    const kataAcak = [...kataArray].sort(() => Math.random() - 0.5);
+
+    const soal = {
+      tipe,
+      pertanyaan,
+      kalimatBenar,
+      kataAcak,
+    };
+
+    simpanSoal(soal);
+  });
+}
+
   // Default pertama
   renderFormPilihanGanda();
   renderSoalList();
