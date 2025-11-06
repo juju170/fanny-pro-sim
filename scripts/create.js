@@ -1,0 +1,150 @@
+// les-digital/scripts/create.js
+document.addEventListener("DOMContentLoaded", () => {
+  const tipeSelect = document.getElementById("tipe");
+  const formTipeSoal = document.getElementById("formTipeSoal");
+  const simpanBtn = document.getElementById("simpanSoal");
+  const daftarSoal = document.getElementById("daftarSoal");
+
+  let soalList = JSON.parse(localStorage.getItem("soalList")) || [];
+
+  const renderSoalList = () => {
+    if (soalList.length === 0) {
+      daftarSoal.innerHTML = "<p>Belum ada soal tersimpan.</p>";
+      return;
+    }
+
+    daftarSoal.innerHTML = soalList
+      .map(
+        (soal, i) => `
+      <div class="soal-item">
+        <h3>${i + 1}. (${soal.tipe}) ${soal.pertanyaan}</h3>
+        ${
+          soal.tipe === "pilihanGanda"
+            ? `<ul>${soal.pilihan
+                .map(
+                  (p, j) =>
+                    `<li${soal.jawaban === j ? ' style="color:green;"' : ""}>
+                      ${String.fromCharCode(65 + j)}. ${p}
+                    </li>`
+                )
+                .join("")}</ul>`
+            : `<p><strong>Jawaban Benar:</strong> ${soal.jawaban.join(
+                ", "
+              )}</p>`
+        }
+      </div>`
+      )
+      .join("");
+  };
+
+  // ======== PILIHAN GANDA ========
+  const renderFormPilihanGanda = () => {
+    formTipeSoal.innerHTML = `
+      <label>Pertanyaan:</label>
+      <textarea id="pertanyaan" placeholder="Masukkan pertanyaan..."></textarea>
+
+      <div id="pilihanWrapper"></div>
+      <button type="button" id="tambahPilihan">+ Tambah Pilihan</button>
+
+      <label>Jawaban Benar (pilih salah satu)</label>
+      <select id="jawabanBenar"></select>
+    `;
+
+    const pilihanWrapper = document.getElementById("pilihanWrapper");
+    const tambahBtn = document.getElementById("tambahPilihan");
+    const jawabanBenar = document.getElementById("jawabanBenar");
+
+    let pilihan = ["", ""]; // awal minimal 2
+
+    const updatePilihanUI = () => {
+      pilihanWrapper.innerHTML = "";
+      pilihan.forEach((teks, i) => {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = `Pilihan ${i + 1}`;
+        input.value = teks;
+        input.oninput = () => (pilihan[i] = input.value);
+        pilihanWrapper.appendChild(input);
+      });
+
+      jawabanBenar.innerHTML = pilihan
+        .map((_, i) => `<option value="${i}">${String.fromCharCode(65 + i)}</option>`)
+        .join("");
+    };
+
+    tambahBtn.onclick = () => {
+      if (pilihan.length < 4) {
+        pilihan.push("");
+        updatePilihanUI();
+      } else {
+        alert("Maksimal 4 pilihan!");
+      }
+    };
+
+    updatePilihanUI();
+
+    simpanBtn.onclick = () => {
+      const pertanyaan = document.getElementById("pertanyaan").value.trim();
+      const jawaban = parseInt(jawabanBenar.value);
+
+      if (!pertanyaan) return alert("Pertanyaan belum diisi!");
+      if (pilihan.some((p) => !p)) return alert("Semua pilihan harus diisi!");
+
+      soalList.push({
+        tipe: "pilihanGanda",
+        pertanyaan,
+        pilihan,
+        jawaban,
+      });
+
+      localStorage.setItem("soalList", JSON.stringify(soalList));
+      alert("Soal pilihan ganda berhasil disimpan!");
+      renderSoalList();
+    };
+  };
+
+  // ======== ESAI (KECOCOKKAN) ========
+  const renderFormEsai = () => {
+    formTipeSoal.innerHTML = `
+      <label>Pertanyaan:</label>
+      <textarea id="pertanyaan" placeholder="Masukkan pertanyaan..."></textarea>
+
+      <label>Jawaban Benar (pisahkan dengan || jika lebih dari satu)</label>
+      <textarea id="jawabanEsai" placeholder="contoh: soekarno || ir soekarno"></textarea>
+    `;
+
+    simpanBtn.onclick = () => {
+      const pertanyaan = document.getElementById("pertanyaan").value.trim();
+      const jawabanInput = document.getElementById("jawabanEsai").value.trim();
+
+      if (!pertanyaan) return alert("Pertanyaan belum diisi!");
+      if (!jawabanInput) return alert("Jawaban belum diisi!");
+
+      const jawaban = jawabanInput
+        .split("||")
+        .map((j) => j.trim().toLowerCase())
+        .filter((j) => j);
+
+      soalList.push({
+        tipe: "esai",
+        pertanyaan,
+        jawaban,
+      });
+
+      localStorage.setItem("soalList", JSON.stringify(soalList));
+      alert("Soal esai berhasil disimpan!");
+      renderSoalList();
+    };
+  };
+
+  // ======== EVENT PILIHAN TIPE SOAL ========
+  tipeSelect.addEventListener("change", (e) => {
+    const tipe = e.target.value;
+    if (tipe === "pilihanGanda") renderFormPilihanGanda();
+    else if (tipe === "esai") renderFormEsai();
+  });
+
+  // Default pertama
+  renderFormPilihanGanda();
+  renderSoalList();
+});
