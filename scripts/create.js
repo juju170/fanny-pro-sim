@@ -190,6 +190,38 @@ else if (tipe === "pencocokkan") {
   });
 }
 
+  // ====== TIPE SOAL BENAR / SALAH ======
+else if (tipe === "benarSalah") {
+  const wadah = document.getElementById("formWadah");
+  wadah.innerHTML = `
+    <label>Pernyataan:</label>
+    <input type="text" id="pertanyaan" placeholder="Misal: Matahari terbit dari barat" />
+
+    <div>
+      <label>Pilih jawaban benar:</label>
+      <select id="jawabanBenar">
+        <option value="Benar">Benar</option>
+        <option value="Salah">Salah</option>
+      </select>
+    </div>
+
+    <button id="saveQuestion">Simpan Soal</button>
+  `;
+
+  document.getElementById("saveQuestion").addEventListener("click", () => {
+    const pertanyaan = document.getElementById("pertanyaan").value;
+    const jawabanBenar = document.getElementById("jawabanBenar").value;
+
+    const soal = {
+      tipe,
+      pertanyaan,
+      jawabanBenar,
+    };
+
+    simpanSoal(soal);
+  });
+}
+
   // Default pertama
   renderFormPilihanGanda();
   renderSoalList();
